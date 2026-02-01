@@ -13,6 +13,7 @@ import (
     "io"
     "fmt"
 
+    _ "github.com/Lekuruu/chio-go/clients"
     "github.com/Lekuruu/chio-go"
 )
 
