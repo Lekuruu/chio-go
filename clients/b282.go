@@ -17,6 +17,7 @@ type B282 struct {
 	ProtocolVer        int
 	SlotSize           int
 	Readers            chio.ReaderRegistry
+	Instance           chio.BanchoIO // Reference to the outermost client type for dispatch
 }
 
 func (client *B282) WritePacket(stream io.Writer, packetId uint16, data []byte) error {
@@ -82,7 +83,7 @@ func (client *B282) ReadPacket(stream io.Reader) (packet *chio.BanchoPacket, err
 	packet.Data = nil
 
 	if ok {
-		packet.Data, err = reader(client, bytes.NewReader(data))
+		packet.Data, err = reader(client.Instance, bytes.NewReader(data))
 		if err != nil {
 			return nil, err
 		}
@@ -396,6 +397,7 @@ func NewB282() *B282 {
 		ProtocolVer: 0,
 		Readers:     make(chio.ReaderRegistry),
 	}
+	client.Instance = client
 
 	client.Readers[chio.OsuSendUserStatus] = internal.ReaderReadStatus()
 	client.Readers[chio.OsuSendIrcMessage] = internal.ReaderReadMessage()

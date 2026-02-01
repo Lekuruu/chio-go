@@ -209,6 +209,7 @@ func NewB298() *B298 {
 	)
 
 	client := &B298{B296: base}
+	base.Instance = client
 
 	// Register packet readers
 	client.Readers[chio.OsuLobbyJoin] = internal.ReaderReadEmpty()

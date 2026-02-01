@@ -171,6 +171,7 @@ func NewB294() *B294 {
 	base.SupportedPacketIds = append(base.SupportedPacketIds, chio.OsuSendIrcMessagePrivate)
 
 	client := &B294{B291: base}
+	base.Instance = client
 	client.Readers[chio.OsuSendIrcMessagePrivate] = internal.ReaderReadPrivateMessage()
 	client.Readers[chio.OsuSpectateFrames] = internal.ReaderReadFrameBundle()
 	return client

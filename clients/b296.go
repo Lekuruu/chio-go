@@ -140,6 +140,7 @@ func NewB296() *B296 {
 	base := NewB294()
 
 	client := &B296{B294: base}
+	base.Instance = client
 	client.Readers[chio.OsuSpectateFrames] = internal.ReaderReadFrameBundle()
 	return client
 }

@@ -36,7 +36,9 @@ func NewB291() *B291 {
 		chio.BanchoAnnounce,
 	)
 
-	return &B291{B282: base}
+	client := &B291{B282: base}
+	base.Instance = client
+	return client
 }
 
 func init() {
