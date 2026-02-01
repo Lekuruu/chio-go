@@ -1,4 +1,4 @@
-package chio
+package internal
 
 import "fmt"
 

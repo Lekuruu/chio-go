@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Lekuruu/chio-go"
+	chio "github.com/Lekuruu/chio-go"
+	"github.com/Lekuruu/chio-go/internal"
 )
 
 // B282 is the initial implementation of the bancho protocol.
@@ -23,13 +24,13 @@ func (client *B282) WritePacket(stream io.Writer, packetId uint16, data []byte) 
 	packetId = client.ConvertOutputPacketId(packetId)
 	writer := bytes.NewBuffer([]byte{})
 
-	err := chio.WriteUint16(writer, packetId)
+	err := internal.WriteUint16(writer, packetId)
 	if err != nil {
 		return err
 	}
 
-	compressed := chio.CompressData(data)
-	err = chio.WriteUint32(writer, uint32(len(compressed)))
+	compressed := internal.CompressData(data)
+	err = internal.WriteUint32(writer, uint32(len(compressed)))
 	if err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func (client *B282) WritePacket(stream io.Writer, packetId uint16, data []byte) 
 
 func (client *B282) ReadPacket(stream io.Reader) (packet *chio.BanchoPacket, err error) {
 	packet = &chio.BanchoPacket{}
-	packet.Id, err = chio.ReadUint16(stream)
+	packet.Id, err = internal.ReadUint16(stream)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func (client *B282) ReadPacket(stream io.Reader) (packet *chio.BanchoPacket, err
 		return nil, fmt.Errorf("packet '%d' not implemented", packet.Id)
 	}
 
-	length, err := chio.ReadInt32(stream)
+	length, err := internal.ReadInt32(stream)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func (client *B282) ReadPacket(stream io.Reader) (packet *chio.BanchoPacket, err
 		return nil, fmt.Errorf("expected %d bytes, got %d", length, n)
 	}
 
-	data, err := chio.DecompressData(compressedData)
+	data, err := internal.DecompressData(compressedData)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +154,7 @@ func (client *B282) GetReaders() chio.ReaderRegistry {
 
 func (client *B282) WriteLoginReply(stream io.Writer, reply int32) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteInt32(writer, reply)
+	internal.WriteInt32(writer, reply)
 	return client.WritePacket(stream, chio.BanchoLoginReply, writer.Bytes())
 }
 
@@ -164,8 +165,8 @@ func (client *B282) WriteMessage(stream io.Writer, message chio.Message) error {
 	}
 
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteString(writer, message.Sender)
-	chio.WriteString(writer, message.Content)
+	internal.WriteString(writer, message.Sender)
+	internal.WriteString(writer, message.Content)
 	return client.WritePacket(stream, chio.BanchoSendMessage, writer.Bytes())
 }
 
@@ -175,7 +176,7 @@ func (client *B282) WritePing(stream io.Writer) error {
 
 func (client *B282) WriteIrcChangeUsername(stream io.Writer, oldName string, newName string) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteString(writer, fmt.Sprintf("%s>>>>%s", oldName, newName))
+	internal.WriteString(writer, fmt.Sprintf("%s>>>>%s", oldName, newName))
 	return client.WritePacket(stream, chio.BanchoHandleIrcChangeUsername, writer.Bytes())
 }
 
@@ -183,7 +184,7 @@ func (client *B282) WriteUserStats(stream io.Writer, info chio.UserInfo) error {
 	writer := bytes.NewBuffer([]byte{})
 
 	if info.Presence.IsIrc {
-		chio.WriteString(writer, info.Name)
+		internal.WriteString(writer, info.Name)
 		return client.WritePacket(stream, chio.BanchoHandleIrcJoin, writer.Bytes())
 	}
 
@@ -195,7 +196,7 @@ func (client *B282) WriteUserQuit(stream io.Writer, quit chio.UserQuit) error {
 	writer := bytes.NewBuffer([]byte{})
 
 	if quit.Info.Presence.IsIrc && quit.QuitState != chio.QuitStateIrcRemaining {
-		chio.WriteString(writer, quit.Info.Name)
+		internal.WriteString(writer, quit.Info.Name)
 		return client.WritePacket(stream, chio.BanchoHandleIrcQuit, writer.Bytes())
 	}
 
@@ -209,33 +210,33 @@ func (client *B282) WriteUserQuit(stream io.Writer, quit chio.UserQuit) error {
 
 func (client *B282) WriteSpectatorJoined(stream io.Writer, userId int32) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteInt32(writer, userId)
+	internal.WriteInt32(writer, userId)
 	return client.WritePacket(stream, chio.BanchoSpectatorJoined, writer.Bytes())
 }
 
 func (client *B282) WriteSpectatorLeft(stream io.Writer, userId int32) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteInt32(writer, userId)
+	internal.WriteInt32(writer, userId)
 	return client.WritePacket(stream, chio.BanchoSpectatorLeft, writer.Bytes())
 }
 
 func (client *B282) WriteSpectateFrames(stream io.Writer, bundle chio.ReplayFrameBundle) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteUint16(writer, uint16(len(bundle.Frames)))
+	internal.WriteUint16(writer, uint16(len(bundle.Frames)))
 
 	for _, frame := range bundle.Frames {
 		// Convert button state
 		leftMouse := chio.ButtonStateLeft1&frame.ButtonState > 0 || chio.ButtonStateLeft2&frame.ButtonState > 0
 		rightMouse := chio.ButtonStateRight1&frame.ButtonState > 0 || chio.ButtonStateRight2&frame.ButtonState > 0
 
-		chio.WriteBoolean(writer, leftMouse)
-		chio.WriteBoolean(writer, rightMouse)
-		chio.WriteFloat32(writer, frame.MouseX)
-		chio.WriteFloat32(writer, frame.MouseY)
-		chio.WriteInt32(writer, frame.Time)
+		internal.WriteBoolean(writer, leftMouse)
+		internal.WriteBoolean(writer, rightMouse)
+		internal.WriteFloat32(writer, frame.MouseX)
+		internal.WriteFloat32(writer, frame.MouseY)
+		internal.WriteInt32(writer, frame.Time)
 	}
 
-	chio.WriteUint8(writer, bundle.Action)
+	internal.WriteUint8(writer, bundle.Action)
 	return client.WritePacket(stream, chio.BanchoSpectateFrames, writer.Bytes())
 }
 
@@ -245,7 +246,7 @@ func (client *B282) WriteVersionUpdate(stream io.Writer) error {
 
 func (client *B282) WriteSpectatorCantSpectate(stream io.Writer, userId int32) error {
 	writer := bytes.NewBuffer([]byte{})
-	chio.WriteInt32(writer, userId)
+	internal.WriteInt32(writer, userId)
 	return client.WritePacket(stream, chio.BanchoSpectatorCantSpectate, writer.Bytes())
 }
 
@@ -259,29 +260,29 @@ func (client *B282) WriteStatus(writer io.Writer, status *chio.UserStatus) error
 		action = chio.StatusStatsUpdate
 	}
 
-	chio.WriteUint8(writer, action)
+	internal.WriteUint8(writer, action)
 
 	if action != chio.StatusUnknown {
-		chio.WriteString(writer, status.Text)
-		chio.WriteString(writer, status.BeatmapChecksum)
-		chio.WriteUint16(writer, uint16(status.Mods))
+		internal.WriteString(writer, status.Text)
+		internal.WriteString(writer, status.BeatmapChecksum)
+		internal.WriteUint16(writer, uint16(status.Mods))
 	}
 
 	return nil
 }
 
 func (client *B282) WriteStats(writer io.Writer, info chio.UserInfo) error {
-	chio.WriteInt32(writer, info.Id)
-	chio.WriteString(writer, info.Name)
-	chio.WriteUint64(writer, info.Stats.Rscore)
-	chio.WriteFloat64(writer, info.Stats.Accuracy)
-	chio.WriteInt32(writer, info.Stats.Playcount)
-	chio.WriteUint64(writer, info.Stats.Tscore)
-	chio.WriteInt32(writer, info.Stats.Rank)
-	chio.WriteString(writer, info.AvatarFilename())
+	internal.WriteInt32(writer, info.Id)
+	internal.WriteString(writer, info.Name)
+	internal.WriteUint64(writer, info.Stats.Rscore)
+	internal.WriteFloat64(writer, info.Stats.Accuracy)
+	internal.WriteInt32(writer, info.Stats.Playcount)
+	internal.WriteUint64(writer, info.Stats.Tscore)
+	internal.WriteInt32(writer, info.Stats.Rank)
+	internal.WriteString(writer, info.AvatarFilename())
 	client.WriteStatus(writer, info.Status)
-	chio.WriteUint8(writer, uint8(info.Presence.Timezone+24))
-	chio.WriteString(writer, info.Presence.Location())
+	internal.WriteUint8(writer, uint8(info.Presence.Timezone+24))
+	internal.WriteString(writer, info.Presence.Location())
 	return nil
 }
 
@@ -306,17 +307,17 @@ func (client *B282) WriteUserPresenceBundle(stream io.Writer, infos []chio.UserI
 
 func (client *B282) ReadStatus(reader io.Reader) (*chio.UserStatus, error) {
 	var err error
-	errors := chio.NewErrorCollection()
+	errors := internal.NewErrorCollection()
 	status := &chio.UserStatus{}
-	status.Action, err = chio.ReadUint8(reader)
+	status.Action, err = internal.ReadUint8(reader)
 	errors.Add(err)
 
 	if status.Action != chio.StatusUnknown {
-		status.Text, err = chio.ReadString(reader)
+		status.Text, err = internal.ReadString(reader)
 		errors.Add(err)
-		status.BeatmapChecksum, err = chio.ReadString(reader)
+		status.BeatmapChecksum, err = internal.ReadString(reader)
 		errors.Add(err)
-		mods, err := chio.ReadUint16(reader)
+		mods, err := internal.ReadUint16(reader)
 		errors.Add(err)
 		status.Mods = uint32(mods)
 	}
@@ -327,7 +328,7 @@ func (client *B282) ReadStatus(reader io.Reader) (*chio.UserStatus, error) {
 func (client *B282) ReadMessage(reader io.Reader) (*chio.Message, error) {
 	var err error
 	message := &chio.Message{}
-	message.Content, err = chio.ReadString(reader)
+	message.Content, err = internal.ReadString(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +341,7 @@ func (client *B282) ReadMessage(reader io.Reader) (*chio.Message, error) {
 }
 
 func (client *B282) ReadFrameBundle(reader io.Reader) (*chio.ReplayFrameBundle, error) {
-	count, err := chio.ReadUint16(reader)
+	count, err := internal.ReadUint16(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +355,7 @@ func (client *B282) ReadFrameBundle(reader io.Reader) (*chio.ReplayFrameBundle, 
 		frames[i] = frame
 	}
 
-	action, err := chio.ReadUint8(reader)
+	action, err := internal.ReadUint8(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -364,17 +365,17 @@ func (client *B282) ReadFrameBundle(reader io.Reader) (*chio.ReplayFrameBundle, 
 
 func (client *B282) ReadReplayFrame(reader io.Reader) (*chio.ReplayFrame, error) {
 	var err error
-	errors := chio.NewErrorCollection()
+	errors := internal.NewErrorCollection()
 	frame := &chio.ReplayFrame{}
-	mouseLeft, err := chio.ReadBoolean(reader)
+	mouseLeft, err := internal.ReadBoolean(reader)
 	errors.Add(err)
-	mouseRight, err := chio.ReadBoolean(reader)
+	mouseRight, err := internal.ReadBoolean(reader)
 	errors.Add(err)
-	frame.MouseX, err = chio.ReadFloat32(reader)
+	frame.MouseX, err = internal.ReadFloat32(reader)
 	errors.Add(err)
-	frame.MouseY, err = chio.ReadFloat32(reader)
+	frame.MouseY, err = internal.ReadFloat32(reader)
 	errors.Add(err)
-	frame.Time, err = chio.ReadInt32(reader)
+	frame.Time, err = internal.ReadInt32(reader)
 	errors.Add(err)
 
 	frame.ButtonState = 0
@@ -403,13 +404,13 @@ func NewB282() chio.BanchoIO {
 		return c.(*B282).ReadMessage(reader)
 	}
 	client.Readers[chio.OsuStartSpectating] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return chio.ReadUint32(reader)
+		return internal.ReadUint32(reader)
 	}
 	client.Readers[chio.OsuSpectateFrames] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
 		return c.(*B282).ReadFrameBundle(reader)
 	}
 	client.Readers[chio.OsuErrorReport] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return chio.ReadString(reader)
+		return internal.ReadString(reader)
 	}
 
 	client.SupportedPacketIds = []uint16{
