@@ -390,28 +390,18 @@ func (client *B282) ReadReplayFrame(reader io.Reader) (*chio.ReplayFrame, error)
 	return frame, errors.Next()
 }
 
-func NewB282() chio.BanchoIO {
+func NewB282() *B282 {
 	client := &B282{
 		SlotSize:    8,
 		ProtocolVer: 0,
 		Readers:     make(chio.ReaderRegistry),
 	}
 
-	client.Readers[chio.OsuSendUserStatus] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return c.(*B282).ReadStatus(reader)
-	}
-	client.Readers[chio.OsuSendIrcMessage] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return c.(*B282).ReadMessage(reader)
-	}
-	client.Readers[chio.OsuStartSpectating] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return internal.ReadUint32(reader)
-	}
-	client.Readers[chio.OsuSpectateFrames] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return c.(*B282).ReadFrameBundle(reader)
-	}
-	client.Readers[chio.OsuErrorReport] = func(c chio.BanchoIO, reader io.Reader) (any, error) {
-		return internal.ReadString(reader)
-	}
+	client.Readers[chio.OsuSendUserStatus] = internal.ReaderReadStatus()
+	client.Readers[chio.OsuSendIrcMessage] = internal.ReaderReadMessage()
+	client.Readers[chio.OsuStartSpectating] = internal.ReaderReadBanchoInt()
+	client.Readers[chio.OsuSpectateFrames] = internal.ReaderReadFrameBundle()
+	client.Readers[chio.OsuErrorReport] = internal.ReaderReadBanchoString()
 
 	client.SupportedPacketIds = []uint16{
 		chio.OsuSendUserStatus,
