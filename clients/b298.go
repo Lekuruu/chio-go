@@ -102,30 +102,43 @@ func (client *B298) WriteMatch(match chio.Match) []byte {
 
 func (client *B298) ReadMatch(reader io.Reader) (*chio.Match, error) {
 	slotSize := client.MatchSlotSize()
-	errors := internal.NewErrorCollection()
 
 	matchId, err := internal.ReadUint8(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	matchType, err := internal.ReadUint8(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	name, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	beatmapText, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	beatmapId, err := internal.ReadInt32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	beatmapChecksum, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 
 	slotsOpen, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	slotsUsed, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	slotsReady, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
-	errors.Add(err)
-
-	if errors.HasErrors() {
-		return nil, errors.Next()
+	if err != nil {
+		return nil, err
 	}
 
 	slots := make([]*chio.MatchSlot, slotSize)

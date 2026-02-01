@@ -22,17 +22,17 @@ func (client *B320) WriteMessage(stream io.Writer, message chio.Message) error {
 }
 
 func (client *B320) ReadMessage(reader io.Reader) (*chio.Message, error) {
-	errors := internal.NewErrorCollection()
-
 	sender, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	content, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	target, err := internal.ReadString(reader)
-	errors.Add(err)
-
-	if errors.HasErrors() {
-		return nil, errors.Next()
+	if err != nil {
+		return nil, err
 	}
 
 	return &chio.Message{

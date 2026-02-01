@@ -307,23 +307,30 @@ func (client *B282) WriteUserPresenceBundle(stream io.Writer, infos []chio.UserI
 }
 
 func (client *B282) ReadStatus(reader io.Reader) (*chio.UserStatus, error) {
-	var err error
-	errors := internal.NewErrorCollection()
 	status := &chio.UserStatus{}
+	var err error
 	status.Action, err = internal.ReadUint8(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 
 	if status.Action != chio.StatusUnknown {
 		status.Text, err = internal.ReadString(reader)
-		errors.Add(err)
+		if err != nil {
+			return nil, err
+		}
 		status.BeatmapChecksum, err = internal.ReadString(reader)
-		errors.Add(err)
+		if err != nil {
+			return nil, err
+		}
 		mods, err := internal.ReadUint16(reader)
-		errors.Add(err)
+		if err != nil {
+			return nil, err
+		}
 		status.Mods = uint32(mods)
 	}
 
-	return status, errors.Next()
+	return status, nil
 }
 
 func (client *B282) ReadMessage(reader io.Reader) (*chio.Message, error) {
@@ -365,19 +372,27 @@ func (client *B282) ReadFrameBundle(reader io.Reader) (*chio.ReplayFrameBundle, 
 }
 
 func (client *B282) ReadReplayFrame(reader io.Reader) (*chio.ReplayFrame, error) {
-	var err error
-	errors := internal.NewErrorCollection()
 	frame := &chio.ReplayFrame{}
 	mouseLeft, err := internal.ReadBoolean(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	mouseRight, err := internal.ReadBoolean(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	frame.MouseX, err = internal.ReadFloat32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	frame.MouseY, err = internal.ReadFloat32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	frame.Time, err = internal.ReadInt32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 
 	frame.ButtonState = 0
 
@@ -388,7 +403,7 @@ func (client *B282) ReadReplayFrame(reader io.Reader) (*chio.ReplayFrame, error)
 		frame.ButtonState |= chio.ButtonStateRight1
 	}
 
-	return frame, errors.Next()
+	return frame, nil
 }
 
 func NewB282() *B282 {

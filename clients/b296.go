@@ -31,39 +31,61 @@ func (client *B296) WriteScoreFrame(writer io.Writer, frame *chio.ScoreFrame) {
 }
 
 func (client *B296) ReadScoreFrame(reader io.Reader) (*chio.ScoreFrame, error) {
-	errors := internal.NewErrorCollection()
-
 	_, err := internal.ReadString(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	time, err := internal.ReadInt32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	id, err := internal.ReadUint8(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	p300, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	p100, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	p50, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	geki, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	katu, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	miss, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	score, err := internal.ReadUint32(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	maxCombo, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	currentCombo, err := internal.ReadUint16(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	perfect, err := internal.ReadBoolean(reader)
-	errors.Add(err)
+	if err != nil {
+		return nil, err
+	}
 	hp, err := internal.ReadUint8(reader)
-	errors.Add(err)
-
-	if errors.HasErrors() {
-		return nil, errors.Next()
+	if err != nil {
+		return nil, err
 	}
 
 	return &chio.ScoreFrame{
