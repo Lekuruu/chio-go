@@ -2,7 +2,7 @@ package internal
 
 import (
 	"encoding/binary"
-	"errors"
+	"fmt"
 	"io"
 
 	"github.com/bnch/uleb128"
@@ -76,13 +76,13 @@ func WriteIntList32(w io.Writer, v []int32) error {
 	return nil
 }
 
-func WriteBoolList(w io.Writer, bools []bool) error {
-	if len(bools) < 8 {
-		return errors.New("bool list must have at least 8 elements")
+func WriteBoolList(w io.Writer, bools []bool, size int) error {
+	if len(bools) < size {
+		return fmt.Errorf("bool list must have at least %d elements", size)
 	}
 
 	var result byte
-	for i := 7; i >= 0; i-- {
+	for i := size - 1; i >= 0; i-- {
 		if bools[i] {
 			result |= 1
 		}

@@ -39,6 +39,9 @@ type (
 	MatchLockReader interface {
 		ReadMatchLock(io.Reader) (int32, error)
 	}
+	ScoreFrameReader interface {
+		ReadScoreFrame(io.Reader) (*chio.ScoreFrame, error)
+	}
 )
 
 // dispatchReader creates a PacketReader that delegates to the client's method.
@@ -123,10 +126,13 @@ func ReaderReadMatchLock() chio.PacketReader {
 	})
 }
 
-func ReaderReadEmpty() chio.PacketReader {
-	return func(_ chio.BanchoIO, r io.Reader) (any, error) {
-		return nil, nil
-	}
+func ReaderReadScoreFrame() chio.PacketReader {
+	return dispatchReader("ReadScoreFrame", func(c chio.BanchoIO) (func(io.Reader) (*chio.ScoreFrame, error), bool) {
+		if h, ok := c.(ScoreFrameReader); ok {
+			return h.ReadScoreFrame, true
+		}
+		return nil, false
+	})
 }
 
 // Simple readers for primitive types, e.g. bInt or bString
@@ -140,5 +146,11 @@ func ReaderReadBanchoInt() chio.PacketReader {
 func ReaderReadBanchoString() chio.PacketReader {
 	return func(_ chio.BanchoIO, r io.Reader) (any, error) {
 		return ReadString(r)
+	}
+}
+
+func ReaderReadEmpty() chio.PacketReader {
+	return func(_ chio.BanchoIO, r io.Reader) (any, error) {
+		return nil, nil
 	}
 }

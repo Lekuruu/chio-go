@@ -18,7 +18,7 @@ func (client *B298) WriteMatchUpdate(stream io.Writer, match chio.Match) error {
 		// Match IDs greater than 255 are not supported in this client
 		return nil
 	}
-	return client.WritePacket(stream, chio.BanchoMatchUpdate, client.WriteMatch(match))
+	return client.WritePacket(stream, chio.BanchoMatchUpdate, client.Instance.WriteMatch(match))
 }
 
 func (client *B298) WriteMatchNew(stream io.Writer, match chio.Match) error {
@@ -26,7 +26,7 @@ func (client *B298) WriteMatchNew(stream io.Writer, match chio.Match) error {
 		// Match IDs greater than 255 are not supported in this client
 		return nil
 	}
-	return client.WritePacket(stream, chio.BanchoMatchNew, client.WriteMatch(match))
+	return client.WritePacket(stream, chio.BanchoMatchNew, client.Instance.WriteMatch(match))
 }
 
 func (client *B298) WriteMatchDisband(stream io.Writer, matchId int32) error {
@@ -48,7 +48,7 @@ func (client *B298) WriteLobbyPart(stream io.Writer, userId int32) error {
 }
 
 func (client *B298) WriteMatchJoinSuccess(stream io.Writer, match chio.Match) error {
-	return client.WritePacket(stream, chio.BanchoMatchJoinSuccess, client.WriteMatch(match))
+	return client.WritePacket(stream, chio.BanchoMatchJoinSuccess, client.Instance.WriteMatch(match))
 }
 
 func (client *B298) WriteMatchJoinFail(stream io.Writer) error {
@@ -87,9 +87,9 @@ func (client *B298) WriteMatch(match chio.Match) []byte {
 	internal.WriteString(writer, match.BeatmapText)
 	internal.WriteInt32(writer, match.BeatmapId)
 	internal.WriteString(writer, match.BeatmapChecksum)
-	internal.WriteBoolList(writer, slotsOpen)
-	internal.WriteBoolList(writer, slotsUsed)
-	internal.WriteBoolList(writer, slotsReady)
+	internal.WriteBoolList(writer, slotsOpen, client.Instance.MatchSlotSize())
+	internal.WriteBoolList(writer, slotsUsed, client.Instance.MatchSlotSize())
+	internal.WriteBoolList(writer, slotsReady, client.Instance.MatchSlotSize())
 
 	for i := 0; i < slotSize; i++ {
 		if match.Slots[i].HasPlayer() {
@@ -117,11 +117,11 @@ func (client *B298) ReadMatch(reader io.Reader) (*chio.Match, error) {
 	beatmapChecksum, err := internal.ReadString(reader)
 	errors.Add(err)
 
-	slotsOpen, err := internal.ReadBoolList(reader)
+	slotsOpen, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
 	errors.Add(err)
-	slotsUsed, err := internal.ReadBoolList(reader)
+	slotsUsed, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
 	errors.Add(err)
-	slotsReady, err := internal.ReadBoolList(reader)
+	slotsReady, err := internal.ReadBoolList(reader, client.Instance.MatchSlotSize())
 	errors.Add(err)
 
 	if errors.HasErrors() {
@@ -210,8 +210,6 @@ func NewB298() *B298 {
 
 	client := &B298{B296: base}
 	base.Instance = client
-
-	// Register packet readers
 	client.Readers[chio.OsuLobbyJoin] = internal.ReaderReadEmpty()
 	client.Readers[chio.OsuLobbyPart] = internal.ReaderReadEmpty()
 	client.Readers[chio.OsuMatchCreate] = internal.ReaderReadMatch()
@@ -221,7 +219,6 @@ func NewB298() *B298 {
 	client.Readers[chio.OsuMatchReady] = internal.ReaderReadEmpty()
 	client.Readers[chio.OsuMatchLock] = internal.ReaderReadMatchLock()
 	client.Readers[chio.OsuMatchChangeSettings] = internal.ReaderReadMatch()
-
 	return client
 }
 

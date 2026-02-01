@@ -22,9 +22,9 @@ type B282 struct {
 
 func (client *B282) WritePacket(stream io.Writer, packetId uint16, data []byte) error {
 	// Convert packetId back for the client
-	packetId = client.ConvertOutputPacketId(packetId)
-	writer := bytes.NewBuffer([]byte{})
+	packetId = client.Instance.ConvertOutputPacketId(packetId)
 
+	writer := bytes.NewBuffer([]byte{})
 	err := internal.WriteUint16(writer, packetId)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (client *B282) ReadPacket(stream io.Reader) (packet *chio.BanchoPacket, err
 	}
 
 	// Convert packet ID to a usable value
-	packet.Id = client.ConvertInputPacketId(packet.Id)
+	packet.Id = client.Instance.ConvertInputPacketId(packet.Id)
 
 	if !client.ImplementsPacket(packet.Id) {
 		return nil, fmt.Errorf("packet '%d' not implemented", packet.Id)

@@ -44,6 +44,9 @@ type BanchoIO interface {
 
 	// Packet writers
 	BanchoWriters
+
+	// Helper methods
+	BanchoHelpers
 }
 
 // BanchoWriters is an interface that wraps the methods for writing
@@ -107,6 +110,12 @@ type BanchoWriters interface {
 	WriteRTX(stream io.Writer, message string) error
 	WriteMatchAbort(stream io.Writer) error
 	WriteSwitchTournamentServer(stream io.Writer, ip string) error
+}
+
+type BanchoHelpers interface {
+	ConvertInputPacketId(packetId uint16) uint16
+	ConvertOutputPacketId(packetId uint16) uint16
+	WriteMatch(match Match) []byte
 }
 
 var clients = make(map[int]BanchoIO)

@@ -97,14 +97,14 @@ func ReadIntList32(r io.Reader) (v []int32, err error) {
 	return v, nil
 }
 
-func ReadBoolList(r io.Reader) ([]bool, error) {
+func ReadBoolList(r io.Reader, size int) ([]bool, error) {
 	input, err := ReadUint8(r)
 	if err != nil {
 		return nil, err
 	}
 
-	bools := make([]bool, 8)
-	for i := 0; i < 8; i++ {
+	bools := make([]bool, size)
+	for i := 0; i < size; i++ {
 		bools[i] = ((input >> i) & 1) > 0
 	}
 	return bools, nil
