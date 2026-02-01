@@ -1,6 +1,9 @@
 package chio
 
-import "io"
+import (
+	"io"
+	"sort"
+)
 
 // BanchoPacket is a struct that represents a packet that
 // is sent or received
@@ -106,33 +109,53 @@ type BanchoWriters interface {
 	WriteSwitchTournamentServer(stream io.Writer, ip string) error
 }
 
-var clients map[int]BanchoIO = make(map[int]BanchoIO)
+var clients = make(map[int]BanchoIO)
+var sortedVersions []int
 
-const lowestVersion int = 282
-const highestVersion int = 290
+// RegisterClient registers a client instance for a specific version
+// This is called by client implementations in their init() functions
+func RegisterClient(version int, client BanchoIO) {
+	clients[version] = client
+
+	sortedVersions = sortedVersions[:0]
+	for v := range clients {
+		sortedVersions = append(sortedVersions, v)
+	}
+
+	sort.Ints(sortedVersions)
+}
 
 // GetClientInterface returns a BanchoIO interface for the given client version
 func GetClientInterface(clientVersion int) BanchoIO {
+	if len(sortedVersions) == 0 {
+		return nil
+	}
+
+	lowestVersion := sortedVersions[0]
+	highestVersion := sortedVersions[len(sortedVersions)-1]
+
 	if clientVersion < lowestVersion {
-		client := clients[lowestVersion]
-		return client
+		return clients[lowestVersion]
 	}
 
 	if clientVersion > highestVersion {
-		client := clients[highestVersion]
-		return client
+		return clients[highestVersion]
 	}
 
+	// Exact match
 	if client, ok := clients[clientVersion]; ok {
 		return client
 	}
 
-	// Find the next compatible version
-	for version, client := range clients {
+	// Find the highest version that is <= clientVersion
+	bestVersion := lowestVersion
+	for _, version := range sortedVersions {
 		if version <= clientVersion {
-			return client
+			bestVersion = version
+		} else {
+			break
 		}
 	}
 
-	return nil
+	return clients[bestVersion]
 }

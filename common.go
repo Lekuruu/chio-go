@@ -10,75 +10,75 @@ import (
 	"github.com/bnch/uleb128"
 )
 
-func writeUint64(w io.Writer, v uint64) error {
+func WriteUint64(w io.Writer, v uint64) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeInt64(w io.Writer, v int64) error {
-	return writeUint64(w, uint64(v))
+func WriteInt64(w io.Writer, v int64) error {
+	return WriteUint64(w, uint64(v))
 }
 
-func writeUint32(w io.Writer, v uint32) error {
+func WriteUint32(w io.Writer, v uint32) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeInt32(w io.Writer, v int32) error {
-	return writeUint32(w, uint32(v))
+func WriteInt32(w io.Writer, v int32) error {
+	return WriteUint32(w, uint32(v))
 }
 
-func writeUint16(w io.Writer, v uint16) error {
+func WriteUint16(w io.Writer, v uint16) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeInt16(w io.Writer, v int16) error {
-	return writeUint16(w, uint16(v))
+func WriteInt16(w io.Writer, v int16) error {
+	return WriteUint16(w, uint16(v))
 }
 
-func writeUint8(w io.Writer, v uint8) error {
+func WriteUint8(w io.Writer, v uint8) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeInt8(w io.Writer, v int8) error {
-	return writeUint8(w, uint8(v))
+func WriteInt8(w io.Writer, v int8) error {
+	return WriteUint8(w, uint8(v))
 }
 
-func writeBoolean(w io.Writer, v bool) error {
+func WriteBoolean(w io.Writer, v bool) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeFloat32(w io.Writer, v float32) error {
+func WriteFloat32(w io.Writer, v float32) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeFloat64(w io.Writer, v float64) error {
+func WriteFloat64(w io.Writer, v float64) error {
 	return binary.Write(w, binary.LittleEndian, v)
 }
 
-func writeIntList16(w io.Writer, v []int32) error {
-	if err := writeUint16(w, uint16(len(v))); err != nil {
+func WriteIntList16(w io.Writer, v []int32) error {
+	if err := WriteUint16(w, uint16(len(v))); err != nil {
 		return err
 	}
 	for _, i := range v {
-		if err := writeInt32(w, i); err != nil {
+		if err := WriteInt32(w, i); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeIntList32(w io.Writer, v []int32) error {
-	if err := writeUint32(w, uint32(len(v))); err != nil {
+func WriteIntList32(w io.Writer, v []int32) error {
+	if err := WriteUint32(w, uint32(len(v))); err != nil {
 		return err
 	}
 	for _, i := range v {
-		if err := writeInt32(w, i); err != nil {
+		if err := WriteInt32(w, i); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeBoolList(w io.Writer, bools []bool) error {
+func WriteBoolList(w io.Writer, bools []bool) error {
 	if len(bools) < 8 {
 		return errors.New("bool list must have at least 8 elements")
 	}
@@ -92,10 +92,10 @@ func writeBoolList(w io.Writer, bools []bool) error {
 			result <<= 1
 		}
 	}
-	return writeUint8(w, result)
+	return WriteUint8(w, result)
 }
 
-func writeString(w io.Writer, v string) error {
+func WriteString(w io.Writer, v string) error {
 	if v == "" {
 		binary.Write(w, binary.LittleEndian, uint8(0x00))
 		return nil
@@ -110,7 +110,7 @@ func writeString(w io.Writer, v string) error {
 	return nil
 }
 
-func compressData(data []byte) []byte {
+func CompressData(data []byte) []byte {
 	if len(data) == 0 {
 		return []byte{}
 	}
@@ -121,70 +121,70 @@ func compressData(data []byte) []byte {
 	return zb.Bytes()
 }
 
-func readUint64(r io.Reader) (v uint64, err error) {
+func ReadUint64(r io.Reader) (v uint64, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readInt64(r io.Reader) (v int64, err error) {
-	uv, err := readUint64(r)
+func ReadInt64(r io.Reader) (v int64, err error) {
+	uv, err := ReadUint64(r)
 	return int64(uv), err
 }
 
-func readUint32(r io.Reader) (v uint32, err error) {
+func ReadUint32(r io.Reader) (v uint32, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readInt32(r io.Reader) (v int32, err error) {
-	uv, err := readUint32(r)
+func ReadInt32(r io.Reader) (v int32, err error) {
+	uv, err := ReadUint32(r)
 	return int32(uv), err
 }
 
-func readUint16(r io.Reader) (v uint16, err error) {
+func ReadUint16(r io.Reader) (v uint16, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readInt16(r io.Reader) (v int16, err error) {
-	uv, err := readUint16(r)
+func ReadInt16(r io.Reader) (v int16, err error) {
+	uv, err := ReadUint16(r)
 	return int16(uv), err
 }
 
-func readUint8(r io.Reader) (v uint8, err error) {
+func ReadUint8(r io.Reader) (v uint8, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readInt8(r io.Reader) (v int8, err error) {
-	uv, err := readUint8(r)
+func ReadInt8(r io.Reader) (v int8, err error) {
+	uv, err := ReadUint8(r)
 	return int8(uv), err
 }
 
-func readBoolean(r io.Reader) (v bool, err error) {
+func ReadBoolean(r io.Reader) (v bool, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readFloat32(r io.Reader) (v float32, err error) {
+func ReadFloat32(r io.Reader) (v float32, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readFloat64(r io.Reader) (v float64, err error) {
+func ReadFloat64(r io.Reader) (v float64, err error) {
 	err = binary.Read(r, binary.LittleEndian, &v)
 	return v, err
 }
 
-func readIntList16(r io.Reader) (v []int32, err error) {
-	l, err := readUint16(r)
+func ReadIntList16(r io.Reader) (v []int32, err error) {
+	l, err := ReadUint16(r)
 	if err != nil {
 		return nil, err
 	}
 
 	v = make([]int32, l)
 	for i := uint16(0); i < l; i++ {
-		v[i], err = readInt32(r)
+		v[i], err = ReadInt32(r)
 		if err != nil {
 			return nil, err
 		}
@@ -193,15 +193,15 @@ func readIntList16(r io.Reader) (v []int32, err error) {
 	return v, nil
 }
 
-func readIntList32(r io.Reader) (v []int32, err error) {
-	l, err := readUint32(r)
+func ReadIntList32(r io.Reader) (v []int32, err error) {
+	l, err := ReadUint32(r)
 	if err != nil {
 		return nil, err
 	}
 
 	v = make([]int32, l)
 	for i := uint32(0); i < l; i++ {
-		v[i], err = readInt32(r)
+		v[i], err = ReadInt32(r)
 		if err != nil {
 			return nil, err
 		}
@@ -210,8 +210,8 @@ func readIntList32(r io.Reader) (v []int32, err error) {
 	return v, nil
 }
 
-func readBoolList(r io.Reader) ([]bool, error) {
-	input, err := readUint8(r)
+func ReadBoolList(r io.Reader) ([]bool, error) {
+	input, err := ReadUint8(r)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ func readBoolList(r io.Reader) ([]bool, error) {
 	return bools, nil
 }
 
-func readString(r io.Reader) (v string, err error) {
+func ReadString(r io.Reader) (v string, err error) {
 	var b uint8
 	err = binary.Read(r, binary.LittleEndian, &b)
 	if err != nil {
@@ -248,7 +248,7 @@ func readString(r io.Reader) (v string, err error) {
 	return string(buf), nil
 }
 
-func decompressData(data []byte) ([]byte, error) {
+func DecompressData(data []byte) ([]byte, error) {
 	if len(data) == 0 {
 		return []byte{}, nil
 	}

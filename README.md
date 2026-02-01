@@ -13,7 +13,7 @@ import (
     "io"
     "fmt"
 
-    "github.com/lekuruu/chio"
+    "github.com/Lekuruu/chio-go"
 )
 
 // Assuming you have some kind of tcp server
