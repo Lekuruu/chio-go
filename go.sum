@@ -1,2 +1,2 @@
-github.com/bnch/uleb128 v0.0.0-20160221084957-fac1fe18ad59 h1:WmIm5PO5EyIEWq8ia2isZi+M8n4jb+jK8n62RUAQskA=
-github.com/bnch/uleb128 v0.0.0-20160221084957-fac1fe18ad59/go.mod h1:zsF7tgeh6SxSU4t28n0DKFAmrHwIrdgbsBC50nUWIi8=
+github.com/bnch/uleb128 v0.0.0-20251110171552-8b02f5c482e8 h1:5VRKao8j5Dhii3FD6CUxIhtd2PzRA1W8Wbr+QQMJsfs=
+github.com/bnch/uleb128 v0.0.0-20251110171552-8b02f5c482e8/go.mod h1:zsF7tgeh6SxSU4t28n0DKFAmrHwIrdgbsBC50nUWIi8=
